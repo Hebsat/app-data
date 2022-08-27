@@ -1,0 +1,19 @@
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE  messages(
+id INT AUTO_INCREMENT PRIMARY KEY,
+user_id INT NOT NULL,
+message VARCHAR(255)
+);
+
+CREATE TABLE users(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE messages
+    ADD CONSTRAINT `username_key`
+    FOREIGN KEY (user_id)
+    REFERENCES users (id);
