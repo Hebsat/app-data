@@ -1,10 +1,8 @@
 package org.example.controllers;
 
-import org.example.model.Message;
 import org.example.model.User;
 import org.example.request.Auth;
 import org.example.request.UserMessage;
-import org.example.response.ResponseMessage;
 import org.example.services.AuthenticateService;
 import org.example.services.JWTTokenService;
 import org.example.services.MessageService;
@@ -17,12 +15,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin")
 public class AppController {
 
+    private final AuthenticateService authenticateService;
+    private final MessageService messageService;
+    private final JWTTokenService jwtTokenService;
+
     @Autowired
-    private AuthenticateService authenticateService;
-    @Autowired
-    private MessageService messageService;
-    @Autowired
-    private JWTTokenService jwtTokenService;
+    public AppController(AuthenticateService authenticateService, MessageService messageService, JWTTokenService jwtTokenService) {
+        this.authenticateService = authenticateService;
+        this.messageService = messageService;
+        this.jwtTokenService = jwtTokenService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Auth auth) {

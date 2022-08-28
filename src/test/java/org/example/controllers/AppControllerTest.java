@@ -1,84 +1,70 @@
 package org.example.controllers;
 
+import org.example.model.Message;
+import org.example.model.User;
 import org.example.request.Auth;
 import org.example.request.UserMessage;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.example.services.AuthenticateServiceImpl;
+import org.example.services.JWTTokenServiceImpl;
+import org.example.services.MessageServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
-@TestPropertySource("/application-test.properties")
 class AppControllerTest {
 
     private final AppController appController;
+
+    @MockBean
+    private AuthenticateServiceImpl authenticateService;
+    @MockBean
+    private JWTTokenServiceImpl jwtTokenService;
+    @MockBean
+    private MessageServiceImpl messageService;
 
     @Autowired
     AppControllerTest(AppController appController) {
         this.appController = appController;
     }
 
-    Auth auth;
-    String username;
-    String password;
-    String invalidUsername;
-    String invalidPassword;
-    String invalidToken;
-    String validToken;
-
-    @BeforeEach
-    void setUp() {
-        auth = new Auth();
-        username = "test_user1";
-        password = "111";
-        invalidUsername = "invalid_user";
-        invalidPassword = "invalid_password";
-        invalidToken = "invalidToken";
-        validToken = "Bearer_eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0X3VzZXIxIiwiaWF0IjoxNjYxN" +
-                "TQ1OTI1LCJleHAiOjE2NjQxMzc5MjV9.7pBfjsmUPCmGWJCUPnrjeWURGQqPb1VQvxDG37uTHrU";
-    }
-
-    @AfterEach
-    void tearDown() {
-        auth = null;
-        username = null;
-        password = null;
-        invalidUsername = null;
-        invalidPassword = null;
-    }
-
     @Test
     void loginWithInvalidUsername() {
-        auth.setName(invalidUsername);
-        assertTrue(appController.login(auth).getBody().toString().matches("Invalid username"));
+        when(authenticateService.getUser(any())).thenReturn(null);
+        assertTrue(appController.login(new Auth()).getBody().toString().matches("Invalid username"));
     }
 
     @Test
     void loginWithInvalidPassword() {
-        auth.setName(username);
-        auth.setPassword(invalidPassword);
-        assertTrue(appController.login(auth).getBody().toString().matches("Invalid password"));
+        when(authenticateService.getUser(any())).thenReturn(new User());
+        when(authenticateService.validateUser(any(), any())).thenReturn(false);
+        assertTrue(appController.login(new Auth()).getBody().toString().matches("Invalid password"));
     }
 
     @Test
     void login() {
-        auth.setName(username);
-        auth.setPassword(password);
-        assertTrue(appController.login(auth).getStatusCode().equals(HttpStatus.OK));
+        when(authenticateService.getUser(any())).thenReturn(new User());
+        when(authenticateService.validateUser(any(), any())).thenReturn(true);
+        assertEquals(appController.login(new Auth()).getStatusCode(), HttpStatus.OK);
     }
 
     @Test
     void sendMessageWithInvalidToken() {
-        assertTrue(appController.sendMessage(invalidToken, new UserMessage(username, username)).getStatusCode().equals(HttpStatus.FORBIDDEN));
+        when(jwtTokenService.validateToken(any(), any())).thenReturn(false);
+        assertEquals(appController.sendMessage("", new UserMessage()).getStatusCode(), HttpStatus.FORBIDDEN);
     }
 
     @Test
     void sendMessage() {
-        assertTrue(appController.sendMessage(validToken, new UserMessage(username, username)).getStatusCode().equals(HttpStatus.OK));
+        when(jwtTokenService.validateToken(any(), any())).thenReturn(true);
+        when(messageService.saveMessage(any())).thenReturn(new Message());
+        assertEquals(appController.sendMessage("", new UserMessage()).getStatusCode(), HttpStatus.OK);
     }
 }
