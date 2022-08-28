@@ -57,6 +57,12 @@
 ## Запросы для обращения через терминал
 
 Логин:<br>
+```
+curl -H "Content-Type: application/json" -X POST -d "{\"name\":\"user1\",\"password\":\"111\"}" http://localhost:8087/admin/login
+```
+```
+curl -H "Content-Type: application/json" -X POST -d '{"name":"user1","password":"111"}' http://localhost:8087/admin/login
+```
 для успешной авторизации на localhost:8087/admin/login отправить 
 ```json
 {
@@ -70,6 +76,12 @@
 
 
 Посылка сообщения:<br> 
+```
+curl -X POST -H "Authorization: Bearer_eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSIsImlhdCI6MTY2MTUwODU3OCwiZXhwIjoxNjY0MTAwNTc4fQ.DfO96ZYAVsoJqpIrIZ0kGPxgNVOvvPFvHae5CGiHoeU" -H "Content-Type: application/json" -d "{\"name\":\"user1\",\"message\":\"history 3\"}" http://localhost:8087/admin/send
+```
+```
+curl -X POST -H "Authorization: Bearer_eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSIsImlhdCI6MTY2MTUwODU3OCwiZXhwIjoxNjY0MTAwNTc4fQ.DfO96ZYAVsoJqpIrIZ0kGPxgNVOvvPFvHae5CGiHoeU" -H "Content-Type: application/json" -d '{"name":"user1","message":"history 3"}' http://localhost:8087/admin/send
+```
 на localhost:8087/admin/send отправить
 ```json
 {
