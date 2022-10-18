@@ -1,5 +1,8 @@
 package org.example.controllers;
 
+import org.example.exceptions.AppInsideLoginException;
+import org.example.exceptions.ErrorMessages;
+import org.example.exceptions.TokenValidateException;
 import org.example.model.User;
 import org.example.request.Auth;
 import org.example.request.UserMessage;
@@ -27,26 +30,26 @@ public class AppController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Auth auth) {
+    public ResponseEntity<?> login(@RequestBody Auth auth) throws AppInsideLoginException {
         User user = authenticateService.getUser(auth);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username");
+            throw new AppInsideLoginException(ErrorMessages.INVALID_USERNAME);
         }
         if (authenticateService.validateUser(auth, user)) {
             return ResponseEntity.status(HttpStatus.OK).body(jwtTokenService.createToken(auth.getName()));
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid password");
+        throw new AppInsideLoginException(ErrorMessages.INVALID_PASSWORD);
     }
 
     @PostMapping("/send")
-    public ResponseEntity<?> sendMessage(@RequestHeader("Authorization") String token, @RequestBody UserMessage userMessage) {
+    public ResponseEntity<?> sendMessage(@RequestHeader("Authorization") String token, @RequestBody UserMessage userMessage) throws TokenValidateException {
         if (!jwtTokenService.validateToken(token, userMessage)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token validate failed");
+            throw new TokenValidateException(ErrorMessages.INVALID_TOKEN);
         }
         messageService.saveMessage(userMessage);
         if (messageService.messageResolver(userMessage.getMessage())) {
             return ResponseEntity.status(HttpStatus.OK).body(messageService.getHistory(userMessage.getMessage()));
         }
-        return ResponseEntity.status(HttpStatus.OK).body("Message saved");
+        return ResponseEntity.status(HttpStatus.OK).body(ErrorMessages.MESSAGE_SAVED);
     }
 }

@@ -22,7 +22,8 @@ public class AuthenticateServiceImpl implements AuthenticateService{
 
     @Override
     public boolean validateUser(Auth auth, User user) {
-        Logger.getLogger(AuthenticateServiceImpl.class.getName()).info("validating password of user: " + auth.getName() + user.getUsername() + user.getPassword());
+        Logger.getLogger(AuthenticateServiceImpl.class.getName())
+                .info("validating password of user: " + auth.getName() + user.getUsername() + user.getPassword());
         return user.getPassword().equals(auth.getPassword());
     }
 }
